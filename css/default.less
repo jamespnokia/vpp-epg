@@ -1,0 +1,92 @@
+
+// define the colour palette...
+@primary: #263238;
+@primary-light: #4f5b62;
+@primary-dark: #4f5b62;
+@primary-text: #ffffff;
+@selection: #ffb300;
+
+@provider-logo: '../images/nokia-logo-white.png';
+
+// the width of major elements
+@major-block-width: 320px;
+
+@base-font-size: 14px;
+@selectable-font-size: @base-font-size * 1.6;
+
+
+body {
+  background-color: @primary;
+  color: @primary-text;
+  font-family: "nokia-pure-text", Arial, Helvetica, sans-serif;
+  font-size: @base-font-size;
+}
+
+#header {
+  background-color: @primary;
+  height: 60px;
+  margin: 6px;
+}
+
+#provider-logo {
+  background: url(@provider-logo) top center no-repeat;
+  width: 300px;
+  height: 50px;
+  top-margin: 10px;
+  float: left;
+}
+
+#status-message {
+  width: 300px;
+  float: left;
+  background-color: @primary;
+  margin: 10px;
+  vertical-align: bottom;
+}
+
+#datetime {
+  width: 260px;
+  float: right;
+  background-color: @primary;
+  margin: 10px;
+  vertical-align: bottom;
+}
+
+#pip {
+  vertical-align: top;
+  width: @major-block-width;
+  float: right;
+}
+
+#pipvideo {
+	width: 95%;
+	height: 240px;	
+}
+
+#channel-list {
+  	font-size: @selectable-font-size;
+	width: @major-block-width;
+	float: left;
+}
+
+#program-list {
+    font-size: @selectable-font-size;
+	width: @major-block-width;
+	float: left;
+}
+
+.selected {
+	border: 2px solid @selection;
+}
+
+.program-name {
+	width: 95%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metadata {
+  float: right;
+  width: 95%;
+}

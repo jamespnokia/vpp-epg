@@ -1,0 +1,64 @@
+body {
+  background-color: #263238;
+  color: #ffffff;
+  font-family: "nokia-pure-text", Arial, Helvetica, sans-serif;
+  font-size: 14px;
+}
+#header {
+  background-color: #263238;
+  height: 60px;
+  margin: 6px;
+}
+#provider-logo {
+  background: url('../images/nokia-logo-white.png') top center no-repeat;
+  width: 300px;
+  height: 50px;
+  top-margin: 10px;
+  float: left;
+}
+#status-message {
+  width: 300px;
+  float: left;
+  background-color: #263238;
+  margin: 10px;
+  vertical-align: bottom;
+}
+#datetime {
+  width: 260px;
+  float: right;
+  background-color: #263238;
+  margin: 10px;
+  vertical-align: bottom;
+}
+#pip {
+  vertical-align: top;
+  width: 320px;
+  float: right;
+}
+#pipvideo {
+  width: 95%;
+  height: 240px;
+}
+#channel-list {
+  font-size: 22.4px;
+  width: 320px;
+  float: left;
+}
+#program-list {
+  font-size: 22.4px;
+  width: 320px;
+  float: left;
+}
+.selected {
+  border: 2px solid #ffb300;
+}
+.program-name {
+  width: 95%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.metadata {
+  float: right;
+  width: 95%;
+}

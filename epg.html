@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>EPG Simple: Basic, vers. 0.1</title>
+<link rel="stylesheet" type="text/css" href="css/default.css" />
+<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript">
+var gChannelData = [];		// stores channel list
+var gMaxDisplayChannels = 20;
+
+var gProgramData = [];		// stores program list
+var gMaxDisplayPrograms = 20;
+
+var gTVDataPath = 'tvdata/';
+
+
+/**
+ * Create the program list filename from the tvdata path and using the
+ * JSON program file suffix
+ *
+ */
+function getProgramListFilename(channelID) {
+	var programList = gTVDataPath + channelID + '_tvprofil.net.json';
+	
+	return programList;
+}
+
+
+/**
+ * Load the channel data from '/channels?output=json' call
+ *
+ */
+function loadChannelData(jsonUrl) {
+	$.getJSON(jsonUrl).done(function(data) {
+			gChannelData = data.tv.channel;
+			displayChannels();
+		}).fail(function(xmlHttpRequest, statusText, errorThrown) {
+  			console.log('Channel load failed.\n\n' +
+ 				'XML Http Request: ' + JSON.stringify(xmlHttpRequest) +
+				',\nStatus Text: ' + statusText +
+				',\nError Thrown: ' + errorThrown);
+		});
+}
+
+
+/**
+ * Load the program data from '/channel?id=<id>&output=json' call
+ *
+ */
+function loadProgramData(jsonUrl) {
+	$.getJSON(jsonUrl).done(function(data) {
+			gProgramData = data.tv.programme;
+			displayPrograms();
+		}).fail(function(xmlHttpRequest, statusText, errorThrown) {
+			if (xmlHttpRequest.status === 404) {
+				displayProgramMessage("No program data found");
+			} else {
+  				console.log('Channel load failed.\n\n' +
+ 					'XML Http Request: ' + JSON.stringify(xmlHttpRequest) +
+					',\nStatus Text: ' + statusText +
+					',\nError Thrown: ' + errorThrown);
+			}
+		});
+}
+
+
+/**
+ * Display the program description underneath the PiP
+ *
+ */
+function displayProgramMessage(msg) {
+	$('#program-table').html(msg);
+}
+
+
+/**
+ * Renders the gChannelData JSON object into the #channel-table
+ *
+ */
+function displayChannels() {
+	var epgTable = [];
+	var m = gMaxDisplayChannels;
+	var firstChannel;
+	if (gMaxDisplayChannels > gChannelData.length) m = gChannelData.length
+
+	for (var i = 0; i < m; i++) {
+		var c = gChannelData[i];
+		if (i == 0) { 		// load program info for the top-most channel
+			loadProgramData(getProgramListFilename(c['id']));
+		}
+		epgTable.push('<tr class="channel">');
+		epgTable.push('<td class="channel-name"');
+		epgTable.push(' id="');
+		epgTable.push(c['id']);
+		epgTable.push('">');
+		epgTable.push(c['display-name']);
+		epgTable.push('</td></tr>');
+	}
+	$('#channel-table').html(epgTable.join(''));
+
+	setupChannelClickHandlers();
+}
+
+
+/**
+ * Renders the gProgramData JSON object into the #program-table
+ *
+ */
+function displayPrograms() {
+	var epgTable = [];
+	var m = gMaxDisplayPrograms;
+	if (gMaxDisplayPrograms > gProgramData.length) m = gProgramData.length
+
+	for (var i = 0; i < m; i++) {
+		var p = gProgramData[i];
+		var programName = "";
+		var pTitle = p['title'];
+
+		if (typeof pTitle === 'string' || pTitle instanceof String) {
+			programName = pTitle;
+		} else {
+			programName = pTitle['$t'];
+		}
+
+		epgTable.push('<tr class="program">');
+		epgTable.push('<td class="program-name"');
+		epgTable.push(' id="' + i + '"');
+		epgTable.push(' title="' + programName + '">');
+		epgTable.push(programName);
+		epgTable.push('</td></tr>');
+		
+		// always display the top program in the list
+		if (i == 0) displayProgram(0);
+	}
+	$('#program-table').html(epgTable.join(''));
+
+	setupProgramClickHandlers();
+}
+
+
+/**
+ * Respond to channel selection
+ *
+ */
+function setupChannelClickHandlers() {
+	$(".channel-name").click(function() {
+		loadProgramData(getProgramListFilename(this.id));
+	});
+}
+
+
+/**
+ * Respond to program selection
+ *
+ */
+function setupProgramClickHandlers() {
+	$(".program-name").click(function() {
+		var program = this.title;
+		var id = this.id;
+		
+		displayProgram(id);
+		$selectedProgram = $(this);
+		$(".program-name").each(function() {
+			$(this).removeClass('selected');
+		});
+		$selectedProgram.toggleClass('selected');
+	});
+}
+
+
+/**
+ * Display new program in PiP
+ *
+ */
+function displayProgram(id) {
+	var p = gProgramData[id];
+	var description;
+	var pDesc = p['desc'];
+	var videoSrc = p['media'];
+
+	if (pDesc && typeof pDesc === 'string' || pDesc instanceof String) {
+		description = pDesc;
+	} else if (pDesc) {
+		description = pDesc['$t'];
+	} else {
+		description = "";
+	}
+
+	// load the video into the PiP
+	var video = $('#pip video')[0];
+	video.src = videoSrc;
+	video.load();
+	video.play();
+
+	// fill in the metadata (program description)
+	$('#program-description').html(description);
+}
+
+
+/**
+ * Fires once page has loaded, kicks off the javascript, loading channel info
+ *
+ */
+$(function() {
+	loadChannelData(gTVDataPath + 'channel-list.json');
+});
+</script>
+</head>
+
+
+<body>
+<!-- header -->
+<div id="header">
+	<div id="provider-logo"></div>
+	<div id="status-message">Status Message</div>
+	<div id="datetime">Monday 27 Feb 2017, 7.04pm</div>
+</div>
+
+<!-- channel lineup -->
+<div id="channel-list">
+<table id="channel-table" class="display"></table>
+</div>
+
+<!-- program lineup -->
+<div id="program-list">
+<table id="program-table" class="display"></table>
+</div>
+
+<!-- PiP -->
+<div id="pip">
+     <video id="pipvideo" autoplay controls loop>
+		<source type="application/x-mpegURL" />
+        <img src="images/testcard.jpeg" title="Your browser does not support HTML5 video">
+	 </video>
+
+	<!-- metadata -->
+	<div class="metadata" id="program-description">
+
+	</div>
+</div>
+
+
+<!-- footer -->
+<div class="footer">
+<table>
+<tr>
+	<td class="ird-button" id="green"></td>
+	<td class="ird-button" id="red"></td>
+	<td class="ird-button" id="yellow"></td>
+	<td class="ird-button" id="blue"></td>
+</tr>
+</table>
+</div>
+
+
+</body>
+</html>
